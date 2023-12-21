@@ -5,7 +5,7 @@ const cors = require('cors');
 const app = express();
 const port = 3000;
 
-const books = [
+let books = [
   {
     id: 1,
     title: 'Book 1',
@@ -68,10 +68,16 @@ app.get('/api/books/:bookId', (request, response) => {
 });
 
 // DELETE -/api/books/1
+app.delete('/api/books/:bookId', (req, res) => {
+  const bookId = +req.params.bookId;
+  // grazinti viska iskyrus ta el kurio id yra =bookId
+  books = books.filter((bookObj) => bookObj.id !== bookId);
+  res.json(books);
+});
 
 app.post('/api/books/', (req, res) => {
   const newBook = {
-    id: Math.random().toString().slice(3),
+    id: +Math.random().toString().slice(3),
     title: req.body.title,
     author: req.body.author,
     year: req.body.year,
@@ -80,6 +86,26 @@ app.post('/api/books/', (req, res) => {
   console.log(newBook);
   books.push(newBook);
   res.sendStatus(201);
+});
+
+// PUT /api/books/2 - updates books with id 2 object
+app.put('/api/books/:bookId', (req, res) => {
+  const bookId = +req.params.bookId;
+  const foundIdx = books.findIndex((uObj) => uObj.id === bookId);
+  books[foundIdx] = {
+    id: bookId,
+    ...req.body,
+  };
+  res.json(books);
+});
+
+// catch all route 404 case
+app.all('*', (req, res) => {
+  res.status(500).json({
+    msg: 'something went wrong',
+    method: req.method,
+    url: req.url,
+  });
 });
 
 app.listen(port, () => {
